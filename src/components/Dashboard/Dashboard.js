@@ -20,7 +20,7 @@ const Dashboard = () => {
     const [recentTasks, setRecentTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({});
-    const [sortBy, setSortBy] = useState('');
+    const [, setSortBy] = useState('');
 
     useEffect(() => {
         fetchDashboardData();
