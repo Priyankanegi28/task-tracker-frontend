@@ -121,7 +121,7 @@ const EditTaskModal = ({
         <div className="modal-overlay" onClick={onCancel}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>✏️ Edit Task</h2>
+                    <h2> Edit Task</h2>
                     <button className="close-btn" onClick={onCancel}>×</button>
                 </div>
                 
@@ -275,14 +275,7 @@ const EditTaskModal = ({
                             <span style={{ marginRight: '8px' }}>💾</span>
                             Save Changes
                         </button>
-                        <button 
-                            type="button" 
-                            className="cancel-btn"
-                            onClick={onCancel}
-                        >
-                            <span style={{ marginRight: '8px' }}>✕</span>
-                            Cancel
-                        </button>
+                        
                     </div>
                 </form>
             </div>

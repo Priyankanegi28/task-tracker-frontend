@@ -4,7 +4,7 @@ import '../../index.css';
 const FilterSort = ({ filters, onFilterChange, onSortChange }) => {
     return (
         <div className="filters-section">
-            <h3>🔍 Filter & Sort</h3>
+            <h3> Filter & Sort</h3>
             <div className="filters">
                 <div className="filter-group">
                     <label htmlFor="status">📊 Status</label>

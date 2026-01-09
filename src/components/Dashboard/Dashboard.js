@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../../index.css';
 import { taskAPI } from '../../services/api';
+import EditTaskModal from '../Tasks/EditTaskModal'; // Import EditTaskModal
 import FilterSort from '../Tasks/FilterSort';
 import TaskForm from '../Tasks/TaskForm';
 import TaskList from '../Tasks/TaskList';
@@ -16,11 +17,13 @@ const Dashboard = () => {
         overdue: 0,
         highPriority: 0
     });
-    const [tasks, setTasks] = useState([]); // Add tasks state
+    const [tasks, setTasks] = useState([]);
     const [recentTasks, setRecentTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({});
     const [, setSortBy] = useState('');
+    const [editingTask, setEditingTask] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         fetchDashboardData();
@@ -34,12 +37,12 @@ const Dashboard = () => {
             ]);
             
             const fetchedTasks = tasksRes.data.data || [];
-            setTasks(fetchedTasks); // Set tasks state
+            setTasks(fetchedTasks);
             calculateStats(fetchedTasks);
             setRecentTasks(fetchedTasks.slice(0, 5));
         } catch (error) {
             console.error('Failed to fetch dashboard data:', error);
-            setTasks([]); // Set empty array on error
+            setTasks([]);
             setRecentTasks([]);
         } finally {
             setLoading(false);
@@ -81,7 +84,7 @@ const Dashboard = () => {
     const handleTaskUpdated = async (id, updates) => {
         try {
             await taskAPI.updateTask(id, updates);
-            fetchDashboardData(); // Refresh data
+            fetchDashboardData();
         } catch (error) {
             console.error('Error updating task:', error);
         }
@@ -90,15 +93,45 @@ const Dashboard = () => {
     const handleTaskDeleted = async (id) => {
         try {
             await taskAPI.deleteTask(id);
-            fetchDashboardData(); // Refresh data
+            fetchDashboardData();
         } catch (error) {
             console.error('Error deleting task:', error);
         }
     };
 
     const handleTaskEdit = (task) => {
-        // You can implement edit modal here if needed
-        console.log('Edit task:', task);
+        setEditingTask(task);
+        setIsEditing(true);
+    };
+
+    const handleEditSave = async (updatedTask) => {
+        try {
+            const { _id, ...updates } = updatedTask;
+            const response = await taskAPI.updateTask(_id, updates);
+            
+            if (response.data.success) {
+                // Update the task in local state
+                setTasks(prev => prev.map(task => 
+                    task._id === _id ? { ...task, ...updates } : task
+                ));
+                setRecentTasks(prev => prev.map(task => 
+                    task._id === _id ? { ...task, ...updates } : task
+                ));
+                setIsEditing(false);
+                setEditingTask(null);
+                fetchDashboardData(); // Refresh stats
+            } else {
+                alert('Failed to update task: ' + response.data.message);
+            }
+        } catch (error) {
+            console.error('Error saving edited task:', error);
+            alert('Failed to update task: ' + (error.response?.data?.message || error.message));
+        }
+    };
+
+    const handleEditCancel = () => {
+        setIsEditing(false);
+        setEditingTask(null);
     };
 
     const handleFilterChange = (filterType, value) => {
@@ -172,15 +205,24 @@ const Dashboard = () => {
                             onSortChange={handleSortChange}
                         />
                         <TaskList
-                            tasks={tasks} // Pass tasks array
+                            tasks={tasks}
                             onUpdate={handleTaskUpdated}
                             onDelete={handleTaskDeleted}
-                            onEdit={handleTaskEdit}
+                            onEdit={handleTaskEdit} // Now this will trigger the modal
                             loading={loading}
                         />
                     </div>
                 </div>
             </div>
+
+            {/* Edit Task Modal */}
+            {isEditing && editingTask && (
+                <EditTaskModal
+                    task={editingTask}
+                    onSave={handleEditSave}
+                    onCancel={handleEditCancel}
+                />
+            )}
         </div>
     );
 };
